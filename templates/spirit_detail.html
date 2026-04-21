@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ bev.name }} — {{ bev.brand }} {{ bev.type|capitalize }} | Spiritus</title>
+  <meta name="description" content="{{ bev.description[:155] if bev.description else bev.name + ' — ' + bev.abv|string + '% ABV ' + bev.type + ' from ' + bev.country + '. Expert tasting notes and pairing suggestions.' }}" />
+  <meta property="og:title"       content="{{ bev.name }} | Spiritus" />
+  <meta property="og:description" content="{{ bev.tasting_notes or bev.description or '' }}" />
+  <meta property="og:url"         content="{{ base_url }}/spirits/{{ bev.name|lower|replace(' ','-') }}" />
+  <meta property="og:type"        content="product" />
+  <meta name="twitter:card"       content="summary" />
+  <script type="application/ld+json">{{ schema|safe }}</script>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230a0a0a'/><text y='72' x='50' text-anchor='middle' font-size='60' fill='%23c9a84c'>✦</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <style>
+    .detail-page { max-width: 860px; margin: 0 auto; padding: 108px 40px 80px; }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:0.8rem; color:var(--text-muted); margin-bottom:32px; transition:var(--transition); }
+    .back-link:hover { color:var(--gold-light); }
+    .detail-header { margin-bottom:32px; }
+    .detail-eyebrow { font-size:0.7rem; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:10px; }
+    .detail-title { font-family:var(--font-serif); font-size:2.8rem; font-weight:700; color:var(--text-primary); line-height:1.1; margin-bottom:6px; }
+    .detail-brand { font-size:1rem; color:var(--text-muted); margin-bottom:24px; }
+    .detail-chips { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:32px; }
+    .detail-body { display:grid; grid-template-columns:1fr 1fr; gap:32px; }
+    .detail-section { margin-bottom:28px; }
+    .detail-section-title { font-size:0.7rem; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:12px; }
+    .detail-text { font-size:0.9rem; color:var(--text-secondary); line-height:1.75; }
+    .detail-quote { font-style:italic; padding:14px 20px; border-left:2px solid var(--gold); background:var(--gold-subtle); border-radius:0 6px 6px 0; font-size:0.88rem; color:var(--text-secondary); line-height:1.7; }
+    .flavor-bar-row { display:grid; grid-template-columns:80px 1fr 28px; gap:8px; align-items:center; margin-bottom:8px; }
+    .flavor-bar-name { font-size:0.74rem; color:var(--text-secondary); text-align:right; text-transform:capitalize; }
+    .flavor-track { height:6px; background:var(--bg-elevated); border-radius:3px; overflow:hidden; }
+    .flavor-fill { height:100%; background:linear-gradient(to right,var(--gold-dark),var(--gold)); border-radius:3px; }
+    .flavor-val { font-size:0.72rem; color:var(--gold); font-weight:600; }
+    .pairing-list { display:flex; flex-direction:column; gap:8px; }
+    .pairing-item { font-size:0.82rem; color:var(--text-secondary); line-height:1.5; }
+    .pairing-item strong { color:var(--text-primary); }
+    .tag-row { display:flex; flex-wrap:wrap; gap:8px; }
+    .tag { font-size:0.72rem; padding:4px 12px; border-radius:100px; background:var(--bg-elevated); border:1px solid var(--border); color:var(--text-muted); text-transform:capitalize; }
+    @media(max-width:768px){ .detail-body{grid-template-columns:1fr;} .detail-title{font-size:2rem;} .detail-page{padding:96px 20px 60px;} }
+  </style>
+</head>
+<body>
+  <header id="site-header">
+    <nav class="nav-container">
+      <a class="logo" href="/">
+        <span class="logo-mark">✦</span>
+        <span class="logo-text">SPIRITUS</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/#explore"   class="nav-link">Explore</a></li>
+        <li><a href="/#recommend" class="nav-link">Recommend</a></li>
+        <li><a href="/#compare"   class="nav-link">Compare</a></li>
+        <li><a href="/#cocktails" class="nav-link">Cocktails</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="detail-page">
+    <a class="back-link" href="/">← Back to Spiritus</a>
+
+    <div class="detail-header">
+      <div class="detail-eyebrow">{{ bev.type|capitalize }}{% if bev.subtype %} · {{ bev.subtype }}{% endif %}</div>
+      <h1 class="detail-title">{{ bev.name }}</h1>
+      <div class="detail-brand">{{ bev.brand }}{% if bev.region %} · {{ bev.region }},{% endif %} {{ bev.country }}</div>
+
+      <div class="detail-chips">
+        <span class="modal-meta-chip gold">{{ bev.abv }}% ABV</span>
+        <span class="bev-tier-badge tier-{{ bev.quality_tier }}">{{ bev.quality_tier|replace('-',' ')|title }}</span>
+        {% if bev.price_min and bev.price_max %}
+        <span class="modal-meta-chip">${{ bev.price_min|int }}–${{ bev.price_max|int }}</span>
+        {% endif %}
+        <span class="modal-meta-chip">{{ bev.country }}</span>
+      </div>
+    </div>
+
+    <div class="detail-body">
+      <div>
+        {% if bev.description %}
+        <div class="detail-section">
+          <div class="detail-section-title">About</div>
+          <p class="detail-text">{{ bev.description }}</p>
+        </div>
+        {% endif %}
+
+        {% if bev.tasting_notes %}
+        <div class="detail-section">
+          <div class="detail-section-title">Tasting Notes</div>
+          <div class="detail-quote">✦ {{ bev.tasting_notes }}</div>
+        </div>
+        {% endif %}
+
+        {% set mixers = pairings.get('mixers', []) %}
+        {% if mixers %}
+        <div class="detail-section">
+          <div class="detail-section-title">Best Mixers</div>
+          <div class="pairing-list">
+            {% for m in mixers %}
+            <div class="pairing-item"><strong>{{ m.mixer }}:</strong> {{ m.reason }}</div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% set garnishes = pairings.get('garnishes', []) %}
+        {% if garnishes %}
+        <div class="detail-section">
+          <div class="detail-section-title">Garnishes</div>
+          <div class="tag-row">
+            {% for g in garnishes %}<span class="tag">{{ g }}</span>{% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+
+      <div>
+        <div class="detail-section">
+          <div class="detail-section-title">Flavour Profile</div>
+          {% set flavors = [
+            ('sweet', bev.flavor_sweet), ('bitter', bev.flavor_bitter),
+            ('smoky', bev.flavor_smoky), ('fruity', bev.flavor_fruity),
+            ('spicy', bev.flavor_spicy), ('floral', bev.flavor_floral),
+            ('earthy', bev.flavor_earthy), ('crisp', bev.flavor_crisp),
+            ('woody', bev.flavor_woody), ('creamy', bev.flavor_creamy)
+          ] %}
+          {% for name, val in flavors %}{% if val > 0 %}
+          <div class="flavor-bar-row">
+            <span class="flavor-bar-name">{{ name }}</span>
+            <div class="flavor-track"><div class="flavor-fill" style="width:{{ val * 10 }}%"></div></div>
+            <span class="flavor-val">{{ val }}</span>
+          </div>
+          {% endif %}{% endfor %}
+        </div>
+
+        {% set food = pairings.get('food_pairings', []) %}
+        {% if food %}
+        <div class="detail-section">
+          <div class="detail-section-title">Food Pairings</div>
+          <div class="pairing-list">
+            {% for f in food %}
+            <div class="pairing-item"><strong>{{ f.food }}:</strong> {{ f.reason }}</div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        {% set cocktails = pairings.get('cocktail_suggestions', []) %}
+        {% if cocktails %}
+        <div class="detail-section">
+          <div class="detail-section-title">Cocktails to Make</div>
+          <div class="tag-row">
+            {% for c in cocktails %}
+            <a href="/cocktails/{{ c.name|lower|replace(' ','-') }}" class="tag" style="color:var(--gold-light);border-color:var(--gold-border)">{{ c.name }}</a>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div style="margin-top:40px;padding-top:24px;border-top:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap;">
+      <a href="/" class="btn-primary">Get Recommendations</a>
+      <a href="/category/{{ bev.type }}" class="btn-ghost">More {{ bev.type|capitalize }}s</a>
+    </div>
+  </main>
+
+  <footer id="site-footer">
+    <div class="footer-bottom" style="max-width:860px">
+      <span>© 2026 Spiritus. All rights reserved.</span>
+      <span>Drink responsibly.</span>
+    </div>
+  </footer>
+</body>
+</html>

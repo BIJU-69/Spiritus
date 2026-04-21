@@ -1,12 +1,48 @@
 /* ── SPIRITUS — Frontend Application ────────────────────────────────────── */
 
+/* ── Cache (localStorage, 24-hour TTL) ───────────────────────────────────── */
+const Cache = {
+  TTL: 24 * 60 * 60 * 1000,
+  set(key, data) {
+    try { localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data })); } catch(_) {}
+  },
+  get(key) {
+    try {
+      const item = localStorage.getItem(key);
+      if (!item) return null;
+      const parsed = JSON.parse(item);
+      if (Date.now() - parsed.ts > this.TTL) { localStorage.removeItem(key); return null; }
+      return parsed.data;
+    } catch(_) { return null; }
+  },
+};
+
+/* ── API client with error handling ─────────────────────────────────────── */
 const API = {
-  get: (url) => fetch(url).then(r => r.json()),
-  post: (url, body) => fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  }).then(r => r.json()),
+  async get(url) {
+    try {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    } catch (e) {
+      console.error('API GET failed:', url, e);
+      throw e;
+    }
+  },
+  async post(url, body) {
+    try {
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      return r.json();
+    } catch (e) {
+      console.error('API POST failed:', url, e);
+      throw e;
+    }
+  },
 };
 
 /* ── State ───────────────────────────────────────────────────────────────── */
@@ -103,10 +139,36 @@ function bevCardHTML(bev) {
     </div>`;
 }
 
+/* ── Skeleton loader ─────────────────────────────────────────────────────── */
+function skeletonCards(count = 8) {
+  return Array.from({ length: count }, () => `
+    <div class="skeleton-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div class="skeleton skeleton-icon"></div>
+        <div class="skeleton skeleton-tag"></div>
+      </div>
+      <div class="skeleton skeleton-title"></div>
+      <div class="skeleton skeleton-sub"></div>
+      <div class="skeleton-tags">
+        <div class="skeleton skeleton-tag"></div>
+        <div class="skeleton skeleton-tag"></div>
+      </div>
+      <div class="skeleton skeleton-tags">
+        <div class="skeleton skeleton-tag"></div>
+        <div class="skeleton skeleton-tag"></div>
+        <div class="skeleton skeleton-tag"></div>
+      </div>
+      <div class="skeleton-footer">
+        <div class="skeleton skeleton-line short"></div>
+        <div class="skeleton skeleton-line short" style="width:30%"></div>
+      </div>
+    </div>`).join('');
+}
+
 /* ── EXPLORE ──────────────────────────────────────────────────────────────── */
 async function loadExplore(overrides = {}) {
   const grid = document.getElementById('explore-grid');
-  grid.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading spirits…</p></div>`;
+  grid.innerHTML = skeletonCards(8);
 
   const f = { ...state.filters, ...overrides };
   const params = new URLSearchParams();
@@ -116,8 +178,13 @@ async function loadExplore(overrides = {}) {
   if (f.max_abv) params.set('max_abv', f.max_abv);
   if (f.sort) params.set('sort', f.sort);
 
+  const cacheKey = `spirits_${params.toString()}`;
+  const cached = Cache.get(cacheKey);
+
   try {
-    const data = await API.get(`/api/beverages?${params}`);
+    const data = cached || await API.get(`/api/beverages?${params}`);
+    if (!cached) Cache.set(cacheKey, data);
+
     const count = document.getElementById('explore-count');
     count.textContent = `${data.total} result${data.total !== 1 ? 's' : ''}`;
 
@@ -127,7 +194,7 @@ async function loadExplore(overrides = {}) {
     }
     grid.innerHTML = data.items.map(bevCardHTML).join('');
   } catch (e) {
-    grid.innerHTML = `<div class="empty-state"><p>Failed to load spirits. Please try again.</p></div>`;
+    grid.innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><p>Could not load spirits. Check your connection and try again.</p><br/><button class="btn-ghost-sm" onclick="loadExplore()">Retry</button></div>`;
   }
 }
 
@@ -162,6 +229,53 @@ function initExploreFilters() {
   });
 }
 
+/* ── Radar Chart ─────────────────────────────────────────────────────────── */
+let _radarChart = null;
+
+function renderRadarChart(canvasId, flavors, label) {
+  const keys   = ['sweet','bitter','smoky','fruity','spicy','floral','earthy','crisp','woody','creamy'];
+  const values = keys.map(k => flavors[k] || 0);
+  const nonZeroKeys   = keys.filter((_, i) => values[i] > 0);
+  const nonZeroValues = values.filter(v => v > 0);
+
+  if (nonZeroKeys.length < 3) return; // Not enough data for a meaningful chart
+
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+
+  if (_radarChart) { _radarChart.destroy(); _radarChart = null; }
+
+  _radarChart = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: nonZeroKeys.map(k => k.charAt(0).toUpperCase() + k.slice(1)),
+      datasets: [{
+        label,
+        data: nonZeroValues,
+        borderColor: '#c9a84c',
+        backgroundColor: 'rgba(201,168,76,0.15)',
+        pointBackgroundColor: '#c9a84c',
+        pointBorderColor: '#c9a84c',
+        pointRadius: 4,
+        borderWidth: 2,
+      }],
+    },
+    options: {
+      responsive: true,
+      scales: {
+        r: {
+          min: 0, max: 10,
+          ticks: { stepSize: 2, color: '#5a564f', font: { size: 10 } },
+          grid: { color: 'rgba(255,255,255,0.06)' },
+          pointLabels: { color: '#a8a29a', font: { size: 11, family: 'Inter' } },
+          angleLines: { color: 'rgba(255,255,255,0.06)' },
+        },
+      },
+      plugins: { legend: { display: false } },
+    },
+  });
+}
+
 /* ── BEVERAGE MODAL ───────────────────────────────────────────────────────── */
 async function openBeverageModal(id) {
   const modal = document.getElementById('beverage-modal');
@@ -175,8 +289,9 @@ async function openBeverageModal(id) {
       API.get(`/api/pairings/${id}`),
     ]);
     body.innerHTML = buildBevModal(bev, pairings);
+    requestAnimationFrame(() => renderRadarChart('bev-radar-chart', bev.flavors || {}, bev.name));
   } catch (e) {
-    body.innerHTML = `<button class="modal-close" onclick="closeModal('beverage-modal')">×</button><p style="color:var(--text-muted);padding:40px">Failed to load details.</p>`;
+    body.innerHTML = `<button class="modal-close" onclick="closeModal('beverage-modal')">×</button><div style="padding:40px;text-align:center;color:var(--text-muted)"><div style="font-size:2.5rem;margin-bottom:12px">⚠️</div><p>Could not load spirit details.</p><br/><button class="btn-ghost-sm" onclick="openBeverageModal(${id})">Retry</button></div>`;
   }
 }
 
@@ -228,7 +343,10 @@ function buildBevModal(bev, pairings) {
     ${bev.tasting_notes ? `<div class="modal-tasting">✦ ${bev.tasting_notes}</div>` : ''}
 
     <div class="modal-section-title">Flavour Profile</div>
-    <div class="flavor-profile-chart">${flavorRows}</div>
+    <div style="display:grid;grid-template-columns:1fr 260px;gap:20px;align-items:center">
+      <div class="flavor-profile-chart">${flavorRows}</div>
+      <div class="radar-container"><canvas id="bev-radar-chart"></canvas></div>
+    </div>
 
     <div class="modal-section-title">Pairing & Mixing</div>
     <div class="pairing-grid">
@@ -532,7 +650,7 @@ function buildCompareTable(data) {
 /* ── COCKTAILS ────────────────────────────────────────────────────────────── */
 async function loadCocktails() {
   const grid = document.getElementById('cocktail-grid');
-  grid.innerHTML = `<div class="loading-state"><div class="spinner"></div><p>Loading cocktails…</p></div>`;
+  grid.innerHTML = skeletonCards(6);
 
   const f = state.cocktailFilters;
   const params = new URLSearchParams();
@@ -756,9 +874,33 @@ async function init() {
   initGlobalSearch();
   initCategoryPills();
   initCocktailFilters();
+  initFooter();
 
   // Show hero on load
   navigate('hero');
+
+  // Show testimonials after brief delay
+  setTimeout(() => {
+    const t = document.getElementById('testimonials-strip');
+    if (t) t.style.display = 'block';
+  }, 400);
+}
+
+function initFooter() {
+  document.querySelectorAll('.footer-cat').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      state.filters.type = el.dataset.type;
+      document.getElementById('filter-type').value = el.dataset.type;
+      navigate('explore');
+    });
+  });
+  document.querySelectorAll('#site-footer [data-nav]').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      navigate(el.dataset.nav);
+    });
+  });
 }
 
 document.addEventListener('DOMContentLoaded', init);

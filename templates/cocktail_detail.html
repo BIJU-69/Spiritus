@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ cocktail.name }} Cocktail Recipe — How to Make | Spiritus</title>
+  <meta name="description" content="Learn how to make a {{ cocktail.name }}. {{ cocktail.description[:120] if cocktail.description else '' }} Full recipe with ingredients and step-by-step instructions." />
+  <meta property="og:title"       content="{{ cocktail.name }} Cocktail Recipe | Spiritus" />
+  <meta property="og:description" content="{{ cocktail.description or cocktail.name + ' cocktail recipe with full instructions.' }}" />
+  <meta property="og:type"        content="article" />
+  <meta name="twitter:card"       content="summary" />
+  <script type="application/ld+json">{{ schema|safe }}</script>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230a0a0a'/><text y='72' x='50' text-anchor='middle' font-size='60' fill='%23c9a84c'>✦</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <style>
+    .detail-page { max-width:760px; margin:0 auto; padding:108px 40px 80px; }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:0.8rem; color:var(--text-muted); margin-bottom:32px; transition:var(--transition); }
+    .back-link:hover { color:var(--gold-light); }
+    .detail-eyebrow { font-size:0.7rem; font-weight:700; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold); margin-bottom:10px; }
+    .detail-title { font-family:var(--font-serif); font-size:2.8rem; font-weight:700; color:var(--text-primary); line-height:1.1; margin-bottom:6px; }
+    .detail-chips { display:flex; flex-wrap:wrap; gap:10px; margin:20px 0 32px; }
+    .detail-section { margin-bottom:32px; }
+    .detail-section-title { font-size:0.7rem; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold); margin-bottom:14px; }
+    .ingredient-list { list-style:none; border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; }
+    .ingredient-list li { display:flex; justify-content:space-between; padding:12px 20px; border-bottom:1px solid var(--border); font-size:0.88rem; }
+    .ingredient-list li:last-child { border-bottom:none; }
+    .ing-name { color:var(--text-primary); }
+    .ing-amount { color:var(--gold-light); font-weight:600; }
+    .instructions { font-size:0.9rem; color:var(--text-secondary); line-height:1.85; }
+    .mood-row { display:flex; flex-wrap:wrap; gap:8px; }
+    .mood-tag { font-size:0.7rem; font-weight:600; padding:4px 12px; border-radius:100px; background:var(--gold-subtle); border:1px solid var(--gold-border); color:var(--gold); text-transform:capitalize; }
+    .flavor-tag { font-size:0.7rem; padding:4px 12px; border-radius:100px; background:var(--bg-elevated); border:1px solid var(--border); color:var(--text-muted); text-transform:capitalize; }
+    @media(max-width:768px){ .detail-title{font-size:2rem;} .detail-page{padding:96px 20px 60px;} }
+  </style>
+</head>
+<body>
+  <header id="site-header">
+    <nav class="nav-container">
+      <a class="logo" href="/">
+        <span class="logo-mark">✦</span>
+        <span class="logo-text">SPIRITUS</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/" class="nav-link">Home</a></li>
+        <li><a href="/#cocktails" class="nav-link">All Cocktails</a></li>
+        <li><a href="/#recommend" class="nav-link">Recommend</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="detail-page">
+    <a class="back-link" href="/#cocktails">← Back to Cocktails</a>
+
+    <div class="detail-eyebrow">{{ cocktail.base_spirit|capitalize }} Cocktail</div>
+    <h1 class="detail-title">{{ cocktail.name }}</h1>
+    <p style="color:var(--text-secondary);font-size:0.95rem;line-height:1.7;margin-top:12px;">{{ cocktail.description or '' }}</p>
+
+    <div class="detail-chips">
+      <span class="modal-meta-chip gold">{{ cocktail.base_spirit|capitalize }} Base</span>
+      <span class="difficulty-badge diff-{{ cocktail.difficulty }}">{{ cocktail.difficulty|capitalize }}</span>
+      {% if cocktail.abv_estimate %}<span class="modal-meta-chip">~{{ cocktail.abv_estimate }}% ABV</span>{% endif %}
+      {% if cocktail.glass_type %}<span class="modal-meta-chip">{{ cocktail.glass_type }}</span>{% endif %}
+    </div>
+
+    {% set ingredients = cocktail.ingredients if cocktail.ingredients is not string else cocktail.ingredients|tojson %}
+    <div class="detail-section">
+      <div class="detail-section-title">Ingredients</div>
+      <ul class="ingredient-list">
+        {% for ing in cocktail.to_dict().ingredients %}
+        <li>
+          <span class="ing-name">{{ ing.item }}</span>
+          <span class="ing-amount">{{ ing.amount }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    {% if cocktail.instructions %}
+    <div class="detail-section">
+      <div class="detail-section-title">Instructions</div>
+      <p class="instructions">{{ cocktail.instructions }}</p>
+    </div>
+    {% endif %}
+
+    {% if cocktail.garnish %}
+    <div class="detail-section">
+      <div class="detail-section-title">Garnish</div>
+      <p style="font-size:0.88rem;color:var(--text-secondary)">{{ cocktail.garnish }}</p>
+    </div>
+    {% endif %}
+
+    {% set moods = cocktail.mood_tags.split(',') if cocktail.mood_tags else [] %}
+    {% if moods %}
+    <div class="detail-section">
+      <div class="detail-section-title">Best For</div>
+      <div class="mood-row">
+        {% for m in moods %}<span class="mood-tag">{{ m.strip() }}</span>{% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% set flavors = cocktail.flavor_profile.split(',') if cocktail.flavor_profile else [] %}
+    {% if flavors %}
+    <div class="detail-section">
+      <div class="detail-section-title">Flavour Profile</div>
+      <div class="mood-row">
+        {% for f in flavors %}<span class="flavor-tag">{{ f.strip() }}</span>{% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div style="margin-top:40px;padding-top:24px;border-top:1px solid var(--border);display:flex;gap:12px;flex-wrap:wrap;">
+      <a href="/#recommend" class="btn-primary">Get Spirit Recommendations</a>
+      <a href="/#cocktails" class="btn-ghost">More Cocktails</a>
+    </div>
+  </main>
+
+  <footer id="site-footer">
+    <div class="footer-bottom" style="max-width:760px">
+      <span>© 2026 Spiritus.</span>
+      <span>Drink responsibly.</span>
+    </div>
+  </footer>
+</body>
+</html>

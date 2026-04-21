@@ -3,7 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SPIRITUS — Intelligent Alcohol Insights</title>
+  <title>Spiritus — Discover Your Perfect Spirit | Intelligent Drinks Guide</title>
+  <meta name="description" content="Spiritus is an AI-powered drinks intelligence platform. Get personalised spirit recommendations by mood, compare whiskeys, wines and cocktails, and discover expert pairing suggestions." />
+  <meta name="theme-color" content="#0a0a0a" />
+
+  <!-- Open Graph -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:title"       content="Spiritus — Discover Your Perfect Spirit" />
+  <meta property="og:description" content="Find your perfect pour every time. AI-powered recommendations matched to your mood, occasion, and taste." />
+  <meta property="og:url"         content="https://spiritus.onrender.com" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary" />
+  <meta name="twitter:title"       content="Spiritus — Intelligent Drinks Guide" />
+  <meta name="twitter:description" content="Smart spirit recommendations, cocktail recipes, and expert pairings." />
+
+  <!-- Favicon as inline SVG -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230a0a0a'/><text y='72' x='50' text-anchor='middle' font-size='60' fill='%23c9a84c'>✦</text></svg>" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
@@ -36,8 +53,8 @@
     <div class="hero-bg-overlay"></div>
     <div class="hero-content">
       <p class="hero-eyebrow">The World's Finest Spirits Intelligence</p>
-      <h1 class="hero-title">Discover Your<br /><em>Perfect Pour</em></h1>
-      <p class="hero-subtitle">Curated insights, smart recommendations, and expert pairings for over 50 of the world's most distinguished beverages.</p>
+      <h1 class="hero-title">Find Your Perfect Pour<br /><em>Every Time</em></h1>
+      <p class="hero-subtitle">AI-powered recommendations matched to your mood, occasion, and taste. Explore spirits, compare drinks, and discover cocktail pairings like an expert.</p>
       <div class="hero-cta-row">
         <button class="btn-primary" data-nav="recommend">Get Recommendations</button>
         <button class="btn-ghost" data-nav="explore">Explore All Spirits</button>
@@ -279,6 +296,64 @@
   <!-- ── TOAST ──────────────────────────────────────────────────────────── -->
   <div id="toast" class="toast hidden"></div>
 
+  <!-- ── FOOTER ─────────────────────────────────────────────────────────── -->
+  <footer id="site-footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <span class="logo-mark">✦</span>
+          <span class="logo-text">SPIRITUS</span>
+        </div>
+        <p class="footer-tagline">Intelligent drinks discovery for the curious palate.</p>
+      </div>
+
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Explore</h4>
+          <a href="#" data-nav="explore">All Spirits</a>
+          <a href="#" data-nav="cocktails">Cocktail Recipes</a>
+          <a href="#" data-nav="recommend">Get Recommendations</a>
+          <a href="#" data-nav="compare">Compare Drinks</a>
+        </div>
+        <div class="footer-col">
+          <h4>Categories</h4>
+          <a href="#" data-type="whiskey" class="footer-cat">Whiskey</a>
+          <a href="#" data-type="wine" class="footer-cat">Wine</a>
+          <a href="#" data-type="gin" class="footer-cat">Gin</a>
+          <a href="#" data-type="rum" class="footer-cat">Rum</a>
+        </div>
+        <div class="footer-col">
+          <h4>Legal</h4>
+          <span class="footer-legal-note">By using Spiritus you confirm you are of legal drinking age in your country.</span>
+          <span class="footer-legal-note" style="margin-top:8px;display:block">Drink responsibly. Spiritus does not promote excessive alcohol consumption.</span>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Spiritus. All rights reserved.</span>
+      <span>Built with passion for great drinks.</span>
+    </div>
+  </footer>
+
+  <!-- ── TESTIMONIALS (shown in hero after category pills) ─────────────── -->
+  <div id="testimonials-strip" style="display:none">
+    <div class="testimonials-wrap">
+      <div class="testimonial-card">
+        <p class="testimonial-text">"The recommendation engine is uncanny — it suggested Laphroaig and it was exactly what I needed on a rainy evening."</p>
+        <span class="testimonial-author">— Arjun M., whisky enthusiast</span>
+      </div>
+      <div class="testimonial-card">
+        <p class="testimonial-text">"Finally an app that explains *why* a drink suits my mood. The pairing suggestions alone are worth it."</p>
+        <span class="testimonial-author">— Sofia R., cocktail hobbyist</span>
+      </div>
+      <div class="testimonial-card">
+        <p class="testimonial-text">"The compare feature helped me decide between three bourbons. Bought Blanton's. Zero regrets."</p>
+        <span class="testimonial-author">— James K., home bartender</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="/static/js/app.js"></script>
 </body>
 </html>

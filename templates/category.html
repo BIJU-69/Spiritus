@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Best {{ bev_type|capitalize }}s — Curated Collection | Spiritus</title>
+  <meta name="description" content="Discover the world's finest {{ bev_type }}s. Browse {{ bevs|length }} curated {{ bev_type }} expressions with expert tasting notes, flavour profiles, and pairing suggestions." />
+  <meta property="og:title" content="Best {{ bev_type|capitalize }}s | Spiritus" />
+  <meta property="og:type"  content="website" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230a0a0a'/><text y='72' x='50' text-anchor='middle' font-size='60' fill='%23c9a84c'>✦</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <style>
+    .cat-page { max-width:1200px; margin:0 auto; padding:108px 40px 80px; }
+    .back-link { display:inline-flex; align-items:center; gap:8px; font-size:0.8rem; color:var(--text-muted); margin-bottom:32px; transition:var(--transition); }
+    .back-link:hover { color:var(--gold-light); }
+    .bev-link { text-decoration:none; display:block; }
+    .bev-link .bev-card:hover { border-color:var(--gold-border); transform:translateY(-4px); box-shadow:0 12px 40px rgba(0,0,0,0.5); }
+    @media(max-width:768px){ .cat-page{padding:96px 20px 60px;} }
+  </style>
+</head>
+<body>
+  <header id="site-header">
+    <nav class="nav-container">
+      <a class="logo" href="/">
+        <span class="logo-mark">✦</span>
+        <span class="logo-text">SPIRITUS</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/" class="nav-link">Home</a></li>
+        <li><a href="/#explore" class="nav-link">Explore</a></li>
+        <li><a href="/#recommend" class="nav-link">Recommend</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="cat-page">
+    <a class="back-link" href="/">← Back to Spiritus</a>
+
+    <div class="section-header" style="margin-bottom:36px">
+      <div>
+        <p style="font-size:0.7rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:8px">Category</p>
+        <h1 class="section-title">{{ bev_type|capitalize }}s</h1>
+        <p class="section-subtitle">{{ bevs|length }} curated expressions from around the world.</p>
+      </div>
+    </div>
+
+    <div class="beverage-grid">
+      {% for bev in bevs %}
+      {% set type_icons = {'whiskey':'🥃','vodka':'🍸','rum':'🍹','gin':'🌿','tequila':'🌵','wine':'🍷','beer':'🍺','champagne':'🥂','brandy':'🫙','liqueur':'🍫','mezcal':'🌑'} %}
+      {% set tier_map = {'budget':'tier-budget','mid-range':'tier-mid-range','premium':'tier-premium','ultra-premium':'tier-ultra-premium'} %}
+      {% set tier_labels = {'budget':'Budget','mid-range':'Mid-Range','premium':'Premium','ultra-premium':'Ultra-Premium'} %}
+      <a class="bev-link" href="/spirits/{{ slugify(bev.name) }}">
+        <div class="bev-card">
+          <div class="bev-card-header">
+            <span class="bev-type-icon">{{ type_icons.get(bev.type, '🍶') }}</span>
+            <span class="bev-tier-badge {{ tier_map.get(bev.quality_tier,'') }}">{{ tier_labels.get(bev.quality_tier, bev.quality_tier) }}</span>
+          </div>
+          <div class="bev-name">{{ bev.name }}</div>
+          <div class="bev-brand">{{ bev.brand }} · {{ bev.country }}</div>
+          <div class="bev-meta">
+            <span class="bev-meta-tag bev-abv-tag">{{ bev.abv }}% ABV</span>
+            {% if bev.subtype %}<span class="bev-meta-tag">{{ bev.subtype }}</span>{% endif %}
+          </div>
+          <div class="flavor-tags">
+            {% for f in bev.top_flavors() %}<span class="flavor-tag">{{ f }}</span>{% endfor %}
+          </div>
+          <div class="bev-footer">
+            <span class="bev-price">{{ bev.price_label() }}</span>
+            <span class="bev-country">{{ bev.country }}</span>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </main>
+
+  <footer id="site-footer">
+    <div class="footer-bottom">
+      <span>© 2026 Spiritus. All rights reserved.</span>
+      <span>Drink responsibly.</span>
+    </div>
+  </footer>
+</body>
+</html>

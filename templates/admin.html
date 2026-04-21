@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Spiritus</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230a0a0a'/><text y='72' x='50' text-anchor='middle' font-size='60' fill='%23c9a84c'>✦</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/styles.css" />
+  <style>
+    body { background: var(--bg-primary); }
+    .admin-wrap { max-width: 1100px; margin: 0 auto; padding: 40px; }
+    #login-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; gap:16px; }
+    .login-card { background:var(--bg-card); border:1px solid var(--gold-border); border-radius:var(--radius-lg); padding:48px; width:100%; max-width:380px; text-align:center; }
+    .login-card h2 { font-family:var(--font-serif); font-size:1.8rem; color:var(--gold-light); margin-bottom:8px; }
+    .login-card p { font-size:0.84rem; color:var(--text-muted); margin-bottom:28px; }
+    .login-input { width:100%; padding:12px 16px; background:var(--bg-elevated); border:1px solid var(--border-strong); border-radius:var(--radius-md); color:var(--text-primary); font-size:0.9rem; margin-bottom:16px; }
+    .login-input:focus { border-color:var(--gold-border); outline:none; }
+    .login-error { color:#e05; font-size:0.8rem; margin-top:8px; }
+    #admin-screen { display:none; }
+    .admin-header { display:flex; align-items:center; justify-content:space-between; padding:20px 0 32px; border-bottom:1px solid var(--gold-border); margin-bottom:32px; }
+    .admin-header h1 { font-family:var(--font-serif); font-size:1.6rem; color:var(--gold-light); }
+    .stats-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:16px; margin-bottom:36px; }
+    .stat-card { background:var(--bg-card); border:1px solid var(--gold-border); border-radius:var(--radius-md); padding:20px; text-align:center; }
+    .stat-num { font-family:var(--font-serif); font-size:2.2rem; font-weight:700; color:var(--gold); }
+    .stat-label { font-size:0.72rem; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin-top:4px; }
+    .admin-section-title { font-size:0.72rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); margin:32px 0 16px; }
+    .spirits-table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+    .spirits-table th { text-align:left; padding:10px 14px; font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--gold); background:var(--bg-card); border-bottom:1px solid var(--gold-border); }
+    .spirits-table td { padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text-secondary); vertical-align:middle; }
+    .spirits-table tr:hover td { background:var(--gold-subtle); }
+    .edit-btn { padding:4px 12px; font-size:0.72rem; background:var(--gold-subtle); border:1px solid var(--gold-border); color:var(--gold-light); border-radius:var(--radius-sm); cursor:pointer; transition:var(--transition); }
+    .edit-btn:hover { background:var(--gold); color:#0a0a0a; }
+    .del-btn { padding:4px 12px; font-size:0.72rem; background:rgba(200,50,50,0.1); border:1px solid rgba(200,50,50,0.3); color:#e05; border-radius:var(--radius-sm); cursor:pointer; transition:var(--transition); }
+    .del-btn:hover { background:rgba(200,50,50,0.25); }
+    .add-form { background:var(--bg-card); border:1px solid var(--gold-border); border-radius:var(--radius-lg); padding:28px; margin-top:24px; }
+    .form-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+    .form-group { display:flex; flex-direction:column; gap:6px; }
+    .form-label { font-size:0.68rem; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:var(--gold); }
+    .form-input { padding:8px 12px; background:var(--bg-elevated); border:1px solid var(--border-strong); border-radius:var(--radius-sm); color:var(--text-primary); font-size:0.84rem; }
+    .form-input:focus { border-color:var(--gold-border); outline:none; }
+    .modal-overlay-admin { position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:400; display:none; align-items:center; justify-content:center; padding:24px; }
+    .modal-overlay-admin.open { display:flex; }
+    .edit-modal { background:var(--bg-card); border:1px solid var(--gold-border); border-radius:var(--radius-lg); padding:32px; width:100%; max-width:620px; max-height:90vh; overflow-y:auto; }
+    .edit-modal h3 { font-family:var(--font-serif); font-size:1.3rem; color:var(--text-primary); margin-bottom:20px; }
+    @media(max-width:768px){ .form-grid{grid-template-columns:1fr 1fr;} .admin-wrap{padding:20px;} }
+  </style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login-screen">
+  <div class="login-card">
+    <div style="font-size:2rem;margin-bottom:12px">✦</div>
+    <h2>Admin Access</h2>
+    <p>Enter the admin password to continue.</p>
+    <input type="password" id="admin-password" class="login-input" placeholder="Password" />
+    <button class="btn-primary full-width" onclick="doLogin()">Enter</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- Admin Panel -->
+<div id="admin-screen">
+  <div class="admin-wrap">
+    <div class="admin-header">
+      <div>
+        <h1>✦ Spiritus Admin</h1>
+        <p style="font-size:0.8rem;color:var(--text-muted);margin-top:4px">Spirit catalogue management</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <a href="/" class="btn-ghost-sm" target="_blank">View Site</a>
+        <button class="btn-ghost-sm" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid" id="stats-grid">
+      <div class="stat-card"><div class="stat-num" id="stat-total">—</div><div class="stat-label">Total Spirits</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-cocktails">—</div><div class="stat-label">Cocktails</div></div>
+      <div class="stat-card"><div class="stat-num" id="stat-premium">—</div><div class="stat-label">Premium+</div></div>
+    </div>
+
+    <!-- Spirits Table -->
+    <div class="admin-section-title">Spirit Catalogue</div>
+    <div style="overflow-x:auto">
+      <table class="spirits-table">
+        <thead>
+          <tr>
+            <th>Name</th><th>Type</th><th>ABV</th><th>Country</th><th>Tier</th><th>Price</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="spirits-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Add New Spirit -->
+    <div class="admin-section-title" style="margin-top:40px">Add New Spirit</div>
+    <div class="add-form">
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Name *</label><input class="form-input" id="new-name" placeholder="e.g. Ardbeg 10 Year" /></div>
+        <div class="form-group"><label class="form-label">Brand *</label><input class="form-input" id="new-brand" placeholder="e.g. Ardbeg" /></div>
+        <div class="form-group">
+          <label class="form-label">Type *</label>
+          <select class="form-input" id="new-type">
+            <option value="">Select type</option>
+            <option>whiskey</option><option>vodka</option><option>rum</option>
+            <option>gin</option><option>tequila</option><option>wine</option>
+            <option>beer</option><option>champagne</option><option>brandy</option>
+            <option>liqueur</option><option>mezcal</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Subtype</label><input class="form-input" id="new-subtype" placeholder="e.g. Single Malt Scotch" /></div>
+        <div class="form-group"><label class="form-label">ABV % *</label><input class="form-input" id="new-abv" type="number" step="0.1" placeholder="43.0" /></div>
+        <div class="form-group"><label class="form-label">Country *</label><input class="form-input" id="new-country" placeholder="e.g. Scotland" /></div>
+        <div class="form-group"><label class="form-label">Region</label><input class="form-input" id="new-region" placeholder="e.g. Islay" /></div>
+        <div class="form-group"><label class="form-label">Price Min $</label><input class="form-input" id="new-price-min" type="number" placeholder="45" /></div>
+        <div class="form-group"><label class="form-label">Price Max $</label><input class="form-input" id="new-price-max" type="number" placeholder="60" /></div>
+        <div class="form-group">
+          <label class="form-label">Quality Tier</label>
+          <select class="form-input" id="new-tier">
+            <option value="budget">Budget</option>
+            <option value="mid-range">Mid-Range</option>
+            <option value="premium" selected>Premium</option>
+            <option value="ultra-premium">Ultra-Premium</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Color</label><input class="form-input" id="new-color" placeholder="e.g. Pale gold" /></div>
+      </div>
+      <div class="form-group" style="margin-top:16px"><label class="form-label">Description</label><textarea class="form-input" id="new-desc" rows="3" style="resize:vertical" placeholder="A short description…"></textarea></div>
+      <div class="form-group" style="margin-top:12px"><label class="form-label">Tasting Notes</label><textarea class="form-input" id="new-notes" rows="2" style="resize:vertical" placeholder="e.g. Smoky, peaty, vanilla…"></textarea></div>
+      <div class="admin-section-title" style="margin-top:20px">Flavour Scores (0–10)</div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Sweet</label><input class="form-input" id="fs-sweet" type="number" min="0" max="10" value="0"/></div>
+        <div class="form-group"><label class="form-label">Bitter</label><input class="form-input" id="fs-bitter" type="number" min="0" max="10" value="0"/></div>
+        <div class="form-group"><label class="form-label">Smoky</label><input class="form-input" id="fs-smoky" type="number" min="0" max="10" value="0"/></div>
+        <div class="form-group"><label class="form-label">Fruity</label><input class="form-input" id="fs-fruity" type="number" min="0" max="10" value="0"/></div>
+        <div class="form-group"><label class="form-label">Spicy</label><input class="form-input" id="fs-spicy" type="number" min="0" max="10" value="0"/></div>
+        <div class="form-group"><label class="form-label">Floral</label><input class="form-input" id="fs-floral" type="number" min="0" max="10" value="0"/></div>
+        <div class="form-group"><label class="form-label">Earthy</label><input class="form-input" id="fs-earthy" type="number" min="0" max="10" value="0"/></div>
+        <div class="form-group"><label class="form-label">Crisp</label><input class="form-input" id="fs-crisp" type="number" min="0" max="10" value="0"/></div>
+        <div class="form-group"><label class="form-label">Woody</label><input class="form-input" id="fs-woody" type="number" min="0" max="10" value="0"/></div>
+        <div class="form-group"><label class="form-label">Creamy</label><input class="form-input" id="fs-creamy" type="number" min="0" max="10" value="0"/></div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:24px">
+        <button class="btn-primary" onclick="addSpirit()">Add Spirit</button>
+        <div id="add-status" style="font-size:0.82rem;color:var(--text-muted);display:flex;align-items:center"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay-admin" id="edit-modal">
+  <div class="edit-modal">
+    <h3>Edit Spirit</h3>
+    <input type="hidden" id="edit-id" />
+    <div class="form-grid">
+      <div class="form-group"><label class="form-label">Name</label><input class="form-input" id="edit-name" /></div>
+      <div class="form-group"><label class="form-label">Brand</label><input class="form-input" id="edit-brand" /></div>
+      <div class="form-group"><label class="form-label">ABV %</label><input class="form-input" id="edit-abv" type="number" step="0.1" /></div>
+      <div class="form-group"><label class="form-label">Country</label><input class="form-input" id="edit-country" /></div>
+      <div class="form-group"><label class="form-label">Price Min</label><input class="form-input" id="edit-price-min" type="number" /></div>
+      <div class="form-group"><label class="form-label">Price Max</label><input class="form-input" id="edit-price-max" type="number" /></div>
+    </div>
+    <div class="form-group" style="margin-top:14px"><label class="form-label">Description</label><textarea class="form-input" id="edit-desc" rows="3" style="resize:vertical"></textarea></div>
+    <div class="form-group" style="margin-top:12px"><label class="form-label">Tasting Notes</label><textarea class="form-input" id="edit-notes" rows="2" style="resize:vertical"></textarea></div>
+    <div style="display:flex;gap:12px;margin-top:20px">
+      <button class="btn-primary" onclick="saveEdit()">Save Changes</button>
+      <button class="btn-ghost" onclick="closeEditModal()">Cancel</button>
+      <div id="edit-status" style="font-size:0.82rem;color:var(--text-muted);display:flex;align-items:center"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let adminPass = '';
+
+  async function doLogin() {
+    const pw = document.getElementById('admin-password').value;
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      adminPass = pw;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('admin-screen').style.display = 'block';
+      loadAdmin();
+    } else {
+      document.getElementById('login-error').textContent = 'Incorrect password.';
+    }
+  }
+
+  document.getElementById('admin-password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+
+  function logout() {
+    adminPass = '';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('admin-screen').style.display = 'none';
+  }
+
+  async function loadAdmin() {
+    const [statsRes, spiritsRes] = await Promise.all([
+      fetch('/api/admin/stats', { headers: { 'X-Admin-Password': adminPass } }),
+      fetch('/api/admin/spirits', { headers: { 'X-Admin-Password': adminPass } }),
+    ]);
+    const stats = await statsRes.json();
+    const spirits = await spiritsRes.json();
+
+    document.getElementById('stat-total').textContent = stats.total_spirits;
+    document.getElementById('stat-cocktails').textContent = stats.total_cocktails;
+    const premiumCount = (stats.by_type ? Object.values(stats.by_type).reduce((a,b)=>a+b,0) : 0);
+    document.getElementById('stat-premium').textContent = stats.total_spirits;
+
+    const tbody = document.getElementById('spirits-tbody');
+    tbody.innerHTML = spirits.map(s => `
+      <tr>
+        <td style="color:var(--text-primary);font-weight:500">${s.name}</td>
+        <td style="text-transform:capitalize">${s.type}</td>
+        <td>${s.abv}%</td>
+        <td>${s.country}</td>
+        <td>${s.quality_tier}</td>
+        <td>${s.price_label || '—'}</td>
+        <td style="display:flex;gap:6px">
+          <button class="edit-btn" onclick='openEditModal(${JSON.stringify(s)})'>Edit</button>
+          <button class="del-btn" onclick="deleteSpirit(${s.id},'${s.name.replace(/'/g,"\\'")}')">Delete</button>
+        </td>
+      </tr>`).join('');
+  }
+
+  function openEditModal(s) {
+    document.getElementById('edit-id').value = s.id;
+    document.getElementById('edit-name').value = s.name;
+    document.getElementById('edit-brand').value = s.brand;
+    document.getElementById('edit-abv').value = s.abv;
+    document.getElementById('edit-country').value = s.country;
+    document.getElementById('edit-price-min').value = s.price_min || '';
+    document.getElementById('edit-price-max').value = s.price_max || '';
+    document.getElementById('edit-desc').value = s.description || '';
+    document.getElementById('edit-notes').value = s.tasting_notes || '';
+    document.getElementById('edit-modal').classList.add('open');
+    document.getElementById('edit-status').textContent = '';
+  }
+
+  function closeEditModal() {
+    document.getElementById('edit-modal').classList.remove('open');
+  }
+
+  async function saveEdit() {
+    const id = document.getElementById('edit-id').value;
+    const body = {
+      name: document.getElementById('edit-name').value,
+      brand: document.getElementById('edit-brand').value,
+      abv: parseFloat(document.getElementById('edit-abv').value),
+      country: document.getElementById('edit-country').value,
+      price_min: parseFloat(document.getElementById('edit-price-min').value) || null,
+      price_max: parseFloat(document.getElementById('edit-price-max').value) || null,
+      description: document.getElementById('edit-desc').value,
+      tasting_notes: document.getElementById('edit-notes').value,
+    };
+    const res = await fetch(`/api/admin/spirits/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPass },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) {
+      document.getElementById('edit-status').textContent = 'Saved!';
+      setTimeout(() => { closeEditModal(); loadAdmin(); }, 800);
+    } else {
+      document.getElementById('edit-status').textContent = 'Error saving.';
+    }
+  }
+
+  async function deleteSpirit(id, name) {
+    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+    await fetch(`/api/admin/spirits/${id}`, {
+      method: 'DELETE',
+      headers: { 'X-Admin-Password': adminPass },
+    });
+    loadAdmin();
+  }
+
+  async function addSpirit() {
+    const body = {
+      name: document.getElementById('new-name').value,
+      brand: document.getElementById('new-brand').value,
+      type: document.getElementById('new-type').value,
+      subtype: document.getElementById('new-subtype').value,
+      abv: parseFloat(document.getElementById('new-abv').value),
+      country: document.getElementById('new-country').value,
+      region: document.getElementById('new-region').value,
+      price_min: parseFloat(document.getElementById('new-price-min').value) || null,
+      price_max: parseFloat(document.getElementById('new-price-max').value) || null,
+      quality_tier: document.getElementById('new-tier').value,
+      color: document.getElementById('new-color').value,
+      description: document.getElementById('new-desc').value,
+      tasting_notes: document.getElementById('new-notes').value,
+      flavor_sweet: parseInt(document.getElementById('fs-sweet').value) || 0,
+      flavor_bitter: parseInt(document.getElementById('fs-bitter').value) || 0,
+      flavor_smoky: parseInt(document.getElementById('fs-smoky').value) || 0,
+      flavor_fruity: parseInt(document.getElementById('fs-fruity').value) || 0,
+      flavor_spicy: parseInt(document.getElementById('fs-spicy').value) || 0,
+      flavor_floral: parseInt(document.getElementById('fs-floral').value) || 0,
+      flavor_earthy: parseInt(document.getElementById('fs-earthy').value) || 0,
+      flavor_crisp: parseInt(document.getElementById('fs-crisp').value) || 0,
+      flavor_woody: parseInt(document.getElementById('fs-woody').value) || 0,
+      flavor_creamy: parseInt(document.getElementById('fs-creamy').value) || 0,
+    };
+    const statusEl = document.getElementById('add-status');
+    const res = await fetch('/api/admin/spirits', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPass },
+      body: JSON.stringify(body),
+    });
+    if (res.ok) {
+      statusEl.textContent = `"${body.name}" added successfully!`;
+      statusEl.style.color = 'var(--gold)';
+      loadAdmin();
+    } else {
+      const err = await res.json();
+      statusEl.textContent = err.error || 'Error adding spirit.';
+      statusEl.style.color = '#e05';
+    }
+  }
+
+  document.getElementById('edit-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditModal();
+  });
+</script>
+</body>
+</html>
