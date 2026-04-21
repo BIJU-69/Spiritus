@@ -38,7 +38,7 @@ def index():
 
 @app.route("/googlef5f4d09995984f1f.html")
 def google_verify():
-    return "google-site-verification: googlef5f4d09995984f1f.html"
+    return Response("google-site-verification: googlef5f4d09995984f1f.html", mimetype="text/html")
 
 
 @app.route("/health")
