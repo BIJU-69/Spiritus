@@ -36,6 +36,11 @@ def index():
 
 # ── Health (keeps Render free tier awake via cron-job.org ping) ─────────────
 
+@app.route("/googlef5f4d09995984f1f.html")
+def google_verify():
+    return "google-site-verification: googlef5f4d09995984f1f.html"
+
+
 @app.route("/health")
 def health():
     return jsonify({"status": "ok", "timestamp": datetime.utcnow().isoformat()})
