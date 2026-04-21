@@ -276,9 +276,11 @@ img { max-width: 100%; }
   box-sizing: border-box;
 }
 
-#section-hero {
-  max-width: 100% !important;
-  margin: 0 !important;
+.section.hero-section {
+  max-width: 100%;
+  margin: 0;
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .section-header {
@@ -316,13 +318,12 @@ img { max-width: 100%; }
   text-align: center;
   min-height: 100vh;
   position: relative;
-  padding-top: 68px;
+  padding: 68px 40px 80px;
   overflow: hidden;
-  width: 100%;
   max-width: 100%;
   margin: 0;
-  padding-left: 0;
-  padding-right: 0;
+  width: 100%;
+  box-sizing: border-box;
 }
 .hero-bg-overlay {
   position: absolute;
