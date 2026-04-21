@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SPIRITUS — Intelligent Alcohol Insights</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/styles.css" />
+</head>
+<body>
+
+  <!-- ── HEADER ─────────────────────────────────────────────────────────── -->
+  <header id="site-header">
+    <nav class="nav-container">
+      <div class="logo" data-nav="hero">
+        <span class="logo-mark">✦</span>
+        <span class="logo-text">SPIRITUS</span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#" data-nav="explore"  class="nav-link">Explore</a></li>
+        <li><a href="#" data-nav="recommend" class="nav-link">Recommend</a></li>
+        <li><a href="#" data-nav="compare"  class="nav-link">Compare</a></li>
+        <li><a href="#" data-nav="cocktails" class="nav-link">Cocktails</a></li>
+      </ul>
+      <div class="nav-search">
+        <input type="text" id="global-search" placeholder="Search spirits, wines, cocktails…" autocomplete="off" />
+        <div id="search-results-dropdown" class="search-dropdown hidden"></div>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ── HERO ───────────────────────────────────────────────────────────── -->
+  <section id="section-hero" class="section active">
+    <div class="hero-bg-overlay"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">The World's Finest Spirits Intelligence</p>
+      <h1 class="hero-title">Discover Your<br /><em>Perfect Pour</em></h1>
+      <p class="hero-subtitle">Curated insights, smart recommendations, and expert pairings for over 50 of the world's most distinguished beverages.</p>
+      <div class="hero-cta-row">
+        <button class="btn-primary" data-nav="recommend">Get Recommendations</button>
+        <button class="btn-ghost" data-nav="explore">Explore All Spirits</button>
+      </div>
+    </div>
+    <div class="hero-categories">
+      <div class="category-pills">
+        <button class="cat-pill" data-type="whiskey">🥃 Whiskey</button>
+        <button class="cat-pill" data-type="vodka">🍸 Vodka</button>
+        <button class="cat-pill" data-type="rum">🍹 Rum</button>
+        <button class="cat-pill" data-type="gin">🌿 Gin</button>
+        <button class="cat-pill" data-type="tequila">🌵 Tequila</button>
+        <button class="cat-pill" data-type="wine">🍷 Wine</button>
+        <button class="cat-pill" data-type="beer">🍺 Beer</button>
+        <button class="cat-pill" data-type="champagne">🥂 Champagne</button>
+        <button class="cat-pill" data-type="brandy">🫙 Cognac</button>
+        <button class="cat-pill" data-type="liqueur">🍫 Liqueur</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── EXPLORE ────────────────────────────────────────────────────────── -->
+  <section id="section-explore" class="section hidden">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Explore Spirits</h2>
+        <p class="section-subtitle">Browse our curated collection of the world's finest beverages.</p>
+      </div>
+      <div class="result-count" id="explore-count"></div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label>Type</label>
+        <select id="filter-type">
+          <option value="">All Types</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Quality</label>
+        <select id="filter-quality">
+          <option value="">All Tiers</option>
+          <option value="budget">Budget</option>
+          <option value="mid-range">Mid-Range</option>
+          <option value="premium">Premium</option>
+          <option value="ultra-premium">Ultra-Premium</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>ABV Range</label>
+        <div class="abv-range-row">
+          <input type="number" id="filter-abv-min" placeholder="Min" min="0" max="100" step="0.1" />
+          <span>–</span>
+          <input type="number" id="filter-abv-max" placeholder="Max" min="0" max="100" step="0.1" />
+        </div>
+      </div>
+      <div class="filter-group">
+        <label>Sort By</label>
+        <select id="filter-sort">
+          <option value="name">Name A–Z</option>
+          <option value="abv">ABV</option>
+          <option value="price">Price</option>
+        </select>
+      </div>
+      <button class="btn-gold-sm" id="apply-filters">Apply</button>
+      <button class="btn-ghost-sm" id="reset-filters">Reset</button>
+    </div>
+
+    <div class="beverage-grid" id="explore-grid">
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading spirits…</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── RECOMMEND ─────────────────────────────────────────────────────── -->
+  <section id="section-recommend" class="section hidden">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Smart Recommendations</h2>
+        <p class="section-subtitle">Tell us how you feel — we'll find your perfect drink.</p>
+      </div>
+    </div>
+
+    <div class="recommend-layout">
+      <div class="recommend-panel glass-card">
+        <div class="panel-step">
+          <h3 class="step-label"><span class="step-num">01</span> What's your mood?</h3>
+          <div class="mood-grid" id="mood-selector">
+            <button class="mood-btn" data-mood="relaxed">😌 <span>Relaxed</span></button>
+            <button class="mood-btn" data-mood="party">🎉 <span>Party</span></button>
+            <button class="mood-btn" data-mood="romantic">🌹 <span>Romantic</span></button>
+            <button class="mood-btn" data-mood="stressed">😮‍💨 <span>Stressed</span></button>
+            <button class="mood-btn" data-mood="celebratory">🥂 <span>Celebratory</span></button>
+            <button class="mood-btn" data-mood="adventurous">🌍 <span>Adventurous</span></button>
+            <button class="mood-btn" data-mood="cozy">🧣 <span>Cozy</span></button>
+          </div>
+        </div>
+
+        <div class="panel-step">
+          <h3 class="step-label"><span class="step-num">02</span> Preferred strength?</h3>
+          <div class="strength-row" id="strength-selector">
+            <button class="strength-btn" data-strength="light">
+              <span class="strength-icon">🍃</span>
+              <span class="strength-name">Light</span>
+              <span class="strength-sub">Under 8% ABV</span>
+            </button>
+            <button class="strength-btn" data-strength="moderate">
+              <span class="strength-icon">🌊</span>
+              <span class="strength-name">Moderate</span>
+              <span class="strength-sub">8–25% ABV</span>
+            </button>
+            <button class="strength-btn" data-strength="strong">
+              <span class="strength-icon">🔥</span>
+              <span class="strength-name">Strong</span>
+              <span class="strength-sub">25%+ ABV</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="panel-step">
+          <h3 class="step-label"><span class="step-num">03</span> Flavour preferences? <span class="optional">(optional, pick up to 3)</span></h3>
+          <div class="flavor-grid" id="flavor-selector">
+            <button class="flavor-btn" data-flavor="sweet">🍯 Sweet</button>
+            <button class="flavor-btn" data-flavor="bitter">🍋 Bitter</button>
+            <button class="flavor-btn" data-flavor="smoky">🌫 Smoky</button>
+            <button class="flavor-btn" data-flavor="fruity">🍒 Fruity</button>
+            <button class="flavor-btn" data-flavor="spicy">🌶 Spicy</button>
+            <button class="flavor-btn" data-flavor="floral">🌸 Floral</button>
+            <button class="flavor-btn" data-flavor="earthy">🍂 Earthy</button>
+            <button class="flavor-btn" data-flavor="crisp">❄️ Crisp</button>
+            <button class="flavor-btn" data-flavor="woody">🪵 Woody</button>
+            <button class="flavor-btn" data-flavor="creamy">🥛 Creamy</button>
+          </div>
+        </div>
+
+        <button class="btn-primary full-width" id="get-recommendations">
+          ✦ Find My Perfect Drink
+        </button>
+      </div>
+
+      <div id="recommendations-results" class="recommendations-results">
+        <div class="results-placeholder">
+          <div class="placeholder-icon">🥃</div>
+          <p>Your personalised recommendations will appear here.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── COMPARE ────────────────────────────────────────────────────────── -->
+  <section id="section-compare" class="section hidden">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Compare Drinks</h2>
+        <p class="section-subtitle">Select 2–4 beverages for a side-by-side analysis.</p>
+      </div>
+    </div>
+
+    <div class="compare-selector glass-card">
+      <div class="compare-slots" id="compare-slots">
+        <!-- Slots generated by JS -->
+      </div>
+      <button class="btn-primary" id="run-compare" disabled>Compare Selected</button>
+      <button class="btn-ghost-sm" id="clear-compare">Clear All</button>
+    </div>
+
+    <div id="compare-results" class="compare-results hidden">
+      <!-- Results populated by JS -->
+    </div>
+  </section>
+
+  <!-- ── COCKTAILS ──────────────────────────────────────────────────────── -->
+  <section id="section-cocktails" class="section hidden">
+    <div class="section-header">
+      <div>
+        <h2 class="section-title">Cocktail Recipes</h2>
+        <p class="section-subtitle">Classic and contemporary cocktails with full recipes and pairing insights.</p>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="filter-group">
+        <label>Base Spirit</label>
+        <select id="cocktail-filter-spirit">
+          <option value="">All Spirits</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Mood</label>
+        <select id="cocktail-filter-mood">
+          <option value="">Any Mood</option>
+          <option value="relaxed">Relaxed</option>
+          <option value="party">Party</option>
+          <option value="romantic">Romantic</option>
+          <option value="stressed">Stressed</option>
+          <option value="celebratory">Celebratory</option>
+          <option value="adventurous">Adventurous</option>
+          <option value="cozy">Cozy</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>Difficulty</label>
+        <select id="cocktail-filter-difficulty">
+          <option value="">Any</option>
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+      <button class="btn-gold-sm" id="apply-cocktail-filters">Apply</button>
+    </div>
+
+    <div class="cocktail-grid" id="cocktail-grid">
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading cocktails…</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── BEVERAGE MODAL ─────────────────────────────────────────────────── -->
+  <div id="beverage-modal" class="modal hidden">
+    <div class="modal-overlay" id="bev-modal-overlay"></div>
+    <div class="modal-content glass-card" id="bev-modal-body">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <!-- ── COCKTAIL MODAL ─────────────────────────────────────────────────── -->
+  <div id="cocktail-modal" class="modal hidden">
+    <div class="modal-overlay" id="cocktail-modal-overlay"></div>
+    <div class="modal-content glass-card" id="cocktail-modal-body">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <!-- ── TOAST ──────────────────────────────────────────────────────────── -->
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
